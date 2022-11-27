@@ -1148,14 +1148,21 @@ extern void __kmp_init_target_mem();
 #if KMP_OS_UNIX && (KMP_ARCH_X86 || KMP_ARCH_X86_64)
 // HW TSC is used to reduce overhead (clock tick instead of nanosecond).
 extern kmp_uint64 __kmp_ticks_per_msec;
+extern kmp_uint64 __kmp_ticks_per_usec;
+extern kmp_uint64 __kmp_ticks_per_nsec;
 #if KMP_COMPILER_ICC || KMP_COMPILER_ICX
 #define KMP_NOW() ((kmp_uint64)_rdtsc())
 #else
 #define KMP_NOW() __kmp_hardware_timestamp()
 #endif
 #define KMP_NOW_MSEC() (KMP_NOW() / __kmp_ticks_per_msec)
-#define KMP_BLOCKTIME_INTERVAL(team, tid)                                      \
+#define KMP_BLOCKTIME_INTERVAL_MS(team, tid)                                      \
   (KMP_BLOCKTIME(team, tid) * __kmp_ticks_per_msec)
+#define KMP_BLOCKTIME_INTERVAL_US(team, tid)                                      \
+  (KMP_BLOCKTIME(team, tid) * __kmp_ticks_per_usec)
+#define KMP_BLOCKTIME_INTERVAL_NS(team, tid)                                      \
+  (KMP_BLOCKTIME(team, tid) * __kmp_ticks_per_nsec)
+
 #define KMP_BLOCKING(goal, count) ((goal) > KMP_NOW())
 #else
 // System time is retrieved sporadically while blocking.
@@ -3164,6 +3171,9 @@ extern size_t
     __kmp_malloc_pool_incr; /* incremental size of pool for kmp_malloc() */
 extern int __kmp_env_stksize; /* was KMP_STACKSIZE specified? */
 extern int __kmp_env_blocktime; /* was KMP_BLOCKTIME specified? */
+extern int __kmp_env_blocktime_MS; /* KMP_BLOCKTIME Unit: MS specified? */
+extern int __kmp_env_blocktime_US; /* KMP_BLOCKTIME Unit: US specified? */
+extern int __kmp_env_blocktime_NS; /* KMP_BLOCKTIME Unit: NS specified? */
 extern int __kmp_env_checks; /* was KMP_CHECKS specified?    */
 extern int __kmp_env_consistency_check; // was KMP_CONSISTENCY_CHECK specified?
 extern int __kmp_generate_warnings; /* should we issue warnings? */

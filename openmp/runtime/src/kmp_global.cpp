@@ -414,6 +414,9 @@ int __kmp_need_register_atfork_specified = TRUE;
 
 int __kmp_env_stksize = FALSE; /* KMP_STACKSIZE specified? */
 int __kmp_env_blocktime = FALSE; /* KMP_BLOCKTIME specified? */
+int __kmp_env_blocktime_MS = TRUE; /* KMP_BLOCKTIME Unit: MS specified? */
+int __kmp_env_blocktime_US = FALSE; /* KMP_BLOCKTIME Unit: US specified? */
+int __kmp_env_blocktime_NS = FALSE; /* KMP_BLOCKTIME Unit: NS specified? */
 int __kmp_env_checks = FALSE; /* KMP_CHECKS specified?    */
 int __kmp_env_consistency_check = FALSE; /* KMP_CONSISTENCY_CHECK specified? */
 

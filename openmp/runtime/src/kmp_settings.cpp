@@ -149,6 +149,42 @@ static size_t __kmp_round4k(size_t size) {
 } // __kmp_round4k
 #endif
 
+int __kmp_convert_to_bt_unit(char const *data) {
+  int value, nvalues;
+  if (data == NULL)
+    return (-1);
+
+  nvalues = KMP_SSCANF(data, "%d", &value);
+  if (nvalues < 1)
+    return (-1);
+
+  return value;
+}
+
+int __kmp_convert_to_microseconds(char const *data) {
+  int nvalues;
+  int value;
+  if (data == NULL)
+    return (-1);
+  nvalues = KMP_SSCANF(data, "%d", &value);
+  if (nvalues < 1)
+    return (-1);
+
+  return value;
+}
+
+int __kmp_convert_to_namoseconds(char const *data) {
+  int nvalues;
+  int value;
+  if (data == NULL)
+    return (-1);
+  nvalues = KMP_SSCANF(data, "%d", &value);
+  if (nvalues < 1)
+    return (-1);
+  return value;
+}
+
+
 /* Here, multipliers are like __kmp_convert_to_seconds, but floating-point
    values are allowed, and the return value is in milliseconds.  The default
    multiplier is milliseconds.  Returns INT_MAX only if the value specified
@@ -710,9 +746,35 @@ static void __kmp_stg_print_use_yield(kmp_str_buf_t *buffer, char const *name,
 // -----------------------------------------------------------------------------
 // KMP_BLOCKTIME
 
+
+static void __kmp_stg_parse_blocktime_unit(char const *name, char const *value,
+                                      void *data) {
+  int val = __kmp_convert_to_bt_unit(value);
+  if (val == 1) {
+    __kmp_env_blocktime_US = TRUE;
+    __kmp_env_blocktime_NS = FALSE;
+    __kmp_env_blocktime_MS = FALSE;
+  } else if (val == 2) {
+    __kmp_env_blocktime_NS = TRUE;
+    __kmp_env_blocktime_US = FALSE;
+    __kmp_env_blocktime_MS = FALSE;
+  } else {
+    __kmp_env_blocktime_MS = TRUE;
+    __kmp_env_blocktime_US = FALSE;
+    __kmp_env_blocktime_NS = FALSE;
+  }
+}
+
 static void __kmp_stg_parse_blocktime(char const *name, char const *value,
                                       void *data) {
-  __kmp_dflt_blocktime = __kmp_convert_to_milliseconds(value);
+  if (__kmp_env_blocktime_US) {
+    __kmp_dflt_blocktime = __kmp_convert_to_microseconds(value);
+  } else if (__kmp_env_blocktime_NS) {
+    __kmp_dflt_blocktime = __kmp_convert_to_namoseconds(value);
+  } else {
+    __kmp_dflt_blocktime = __kmp_convert_to_milliseconds(value);
+  }
+
   if (__kmp_dflt_blocktime < 0) {
     __kmp_dflt_blocktime = KMP_DEFAULT_BLOCKTIME;
     __kmp_msg(kmp_ms_warning, KMP_MSG(InvalidValue, name, value),
@@ -5345,6 +5407,8 @@ static void __kmp_stg_print_omp_tool_verbose_init(kmp_str_buf_t *buffer,
 static kmp_setting_t __kmp_stg_table[] = {
 
     {"KMP_ALL_THREADS", __kmp_stg_parse_device_thread_limit, NULL, NULL, 0, 0},
+    {"KMP_BLOCKTIME_UNIT", __kmp_stg_parse_blocktime_unit, __kmp_stg_print_blocktime,
+     NULL, 0, 0},
     {"KMP_BLOCKTIME", __kmp_stg_parse_blocktime, __kmp_stg_print_blocktime,
      NULL, 0, 0},
     {"KMP_USE_YIELD", __kmp_stg_parse_use_yield, __kmp_stg_print_use_yield,
@@ -5986,6 +6050,7 @@ void __kmp_env_initialize(char const *string) {
   }
 
   // We need to know if blocktime was set when processing OMP_WAIT_POLICY
+  __kmp_env_blk_var(&block, "KMP_BLOCKTIME_UNIT");
   blocktime_str = __kmp_env_blk_var(&block, "KMP_BLOCKTIME");
 
   // Special case. If we parse environment, not a string, process KMP_WARNINGS
@@ -6082,6 +6147,12 @@ void __kmp_env_initialize(char const *string) {
   }
   KMP_STRCPY_S(__kmp_affinity_format, KMP_AFFINITY_FORMAT_SIZE, m.str);
   __kmp_str_free(&m.str);
+
+  for (i = 0; i < block.count; ++i) {
+    if (strcmp(block.vars[i].name, "KMP_BLOCKTIME_UNIT") == 0) {
+      __kmp_stg_parse(block.vars[i].name, block.vars[i].value);
+    }
+  }
 
   // Now process all of the settings.
   for (i = 0; i < block.count; ++i) {

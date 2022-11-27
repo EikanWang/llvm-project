@@ -93,6 +93,8 @@ static kmp_cond_align_t __kmp_wait_cv;
 static kmp_mutex_align_t __kmp_wait_mx;
 
 kmp_uint64 __kmp_ticks_per_msec = 1000000;
+kmp_uint64 __kmp_ticks_per_usec = 1000;
+kmp_uint64 __kmp_ticks_per_nsec = 1;
 
 #ifdef DEBUG_SUSPEND
 static void __kmp_print_cond(char *buffer, kmp_cond_align_t *cond) {
@@ -1992,7 +1994,7 @@ kmp_uint64 __kmp_now_nsec() {
 /* Measure clock ticks per millisecond */
 void __kmp_initialize_system_tick() {
   kmp_uint64 now, nsec2, diff;
-  kmp_uint64 delay = 100000; // 50~100 usec on most machines.
+  kmp_uint64 delay = 100000000; // 50~100 usec on most machines.
   kmp_uint64 nsec = __kmp_now_nsec();
   kmp_uint64 goal = __kmp_hardware_timestamp() + delay;
   while ((now = __kmp_hardware_timestamp()) < goal)
@@ -2001,8 +2003,11 @@ void __kmp_initialize_system_tick() {
   diff = nsec2 - nsec;
   if (diff > 0) {
     kmp_uint64 tpms = ((kmp_uint64)1e6 * (delay + (now - goal)) / diff);
-    if (tpms > 0)
+    if (tpms > 0) {
       __kmp_ticks_per_msec = tpms;
+      __kmp_ticks_per_usec = __kmp_ticks_per_msec / 1000;
+      __kmp_ticks_per_nsec = __kmp_ticks_per_msec / 1000000;
+    }
   }
 }
 #endif
