@@ -509,6 +509,7 @@ final_spin=FALSE)
                   th_gtid, __kmp_global.g.g_time.dt.t_value, hibernate,
                   hibernate - __kmp_global.g.g_time.dt.t_value));
 #else
+      printf("th_team_bt_intervals = %llu\n", this_thr->th.th_team_bt_intervals);
     if (__kmp_pause_status == kmp_soft_paused) {
       // Force immediate suspend
       hibernate_goal = KMP_NOW();

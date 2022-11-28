@@ -1843,6 +1843,7 @@ static int __kmp_barrier_template(enum barrier_type bt, int gtid, int is_split,
       } else {
         this_thr->th.th_team_bt_intervals = KMP_BLOCKTIME_INTERVAL_MS(team, tid);
       }
+      printf("th_team_bt_intervals = %llu\n", this_thr->th.th_team_bt_intervals);
 #endif
     }
 
@@ -2274,6 +2275,7 @@ void __kmp_join_barrier(int gtid) {
     } else {
       this_thr->th.th_team_bt_intervals = KMP_BLOCKTIME_INTERVAL_MS(team, tid);
     }
+      printf("th_team_bt_intervals = %llu\n", this_thr->th.th_team_bt_intervals);
 #endif
   }
 
@@ -2477,6 +2479,7 @@ void __kmp_fork_barrier(int gtid, int tid) {
       } else {
         this_thr->th.th_team_bt_intervals = KMP_BLOCKTIME_INTERVAL_MS(team, tid);
       }
+      printf("th_team_bt_intervals = %llu\n", this_thr->th.th_team_bt_intervals);
 #endif
     }
   } // primary thread

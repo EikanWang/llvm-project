@@ -2002,11 +2002,15 @@ void __kmp_initialize_system_tick() {
   nsec2 = __kmp_now_nsec();
   diff = nsec2 - nsec;
   if (diff > 0) {
-    kmp_uint64 tpms = ((kmp_uint64)1e6 * (delay + (now - goal)) / diff);
-    if (tpms > 0) {
-      __kmp_ticks_per_msec = tpms;
-      __kmp_ticks_per_usec = __kmp_ticks_per_msec / 1000;
-      __kmp_ticks_per_nsec = __kmp_ticks_per_msec / 1000000;
+    double tpms_base = double(((double)(delay + (now - goal))) / diff);
+    printf("tpms_base=%f\n", tpms_base);
+    if (tpms_base > 0.0) {
+      __kmp_ticks_per_msec = (kmp_uint64)(tpms_base * (double)1e6);
+      __kmp_ticks_per_usec = (kmp_uint64)(tpms_base * (double)1e3);
+      __kmp_ticks_per_nsec = (kmp_uint64)(tpms_base);
+      printf("__kmp_ticks_per_msec=%llu\n", __kmp_ticks_per_msec);
+      printf("__kmp_ticks_per_usec=%llu\n", __kmp_ticks_per_usec);
+      printf("__kmp_ticks_per_nsec=%llu\n", __kmp_ticks_per_nsec);
     }
   }
 }
